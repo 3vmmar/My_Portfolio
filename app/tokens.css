@@ -1,0 +1,237 @@
+/* ==========================================================================
+   Ammar Ahmed — design tokens (light)
+   ==========================================================================
+
+   Three layers, in dependency order:
+
+     PRIMITIVE  raw values. Never referenced by a component rule directly.
+     SEMANTIC   what a value is *for*. The only layer a surface override touches.
+     COMPONENT  per-component tokens, defined next to the role they serve.
+
+   PROVENANCE. Values marked (M) were pixel-measured from `Formal mee.jpg` —
+   Ammar standing in a travertine atrium under brass sconces. Values marked (D)
+   are arithmetic extrapolations of a measured ramp, never sampled. The
+   travertine wall is ~70% of that photograph, which is why a warm-stone canvas
+   is *more* faithful to the source than the midnight canvas this replaced.
+
+   OWNERSHIP. This file is hand-authored — it is the expression of the system,
+   with the reasoning attached. `assets/design-tokens.json` is the
+   machine-readable export of the same system for handoff and validation.
+   `npm run tokens:check` asserts the two agree on every colour value, so the
+   pair cannot silently diverge.
+
+   CONTRAST. Every text role clears WCAG AA against all four grounds (canvas,
+   card, band, band-deep). Worst case in the system is 4.58:1. The full matrix
+   is in `docs/brand-guidelines.md` and is re-measured on rendered pixels by
+   the audit, not trusted from this comment.
+   ========================================================================== */
+
+/* === PRIMITIVE ========================================================== */
+:root {
+  /* Travertine — the wall. Now the ground the whole site stands on. */
+  --travertine-0: #fcfaf8; /* D — card */
+  --travertine-25: #fbf7f2; /* D — canvas */
+  --travertine-50: #f6ede6; /* D */
+  --travertine-100: #ebd8cf; /* M — band */
+  --travertine-200: #e2cabf; /* M — band-deep, hairline */
+  --travertine-300: #d9beae; /* M — border */
+  --travertine-400: #caac9c; /* M */
+  --travertine-500: #b08e7a; /* M */
+  --travertine-600: #8e6f5d; /* D */
+  --travertine-700: #6b5245; /* D — muted text, control borders */
+
+  /* Brass — the sconces. A material, not a highlight: on a light ground the
+     bright stops cannot carry text, so they only ever appear inside a
+     gradient, and the dark stops carry every boundary and every label. */
+  --brass-100: #f0dcae; /* D — specular */
+  --brass-200: #e6cb8a; /* D */
+  --brass-300: #d9b65f; /* D — accent on inverted bands */
+  --brass-400: #c79a4b; /* M — fixture body. FILL ONLY, 1.65:1 */
+  --brass-500: #b8873c; /* D */
+  --brass-600: #936a3d; /* M — large text / non-text only, 3.07:1 */
+  --brass-700: #6b4a26; /* D — accent, links, focus */
+  --brass-750: #5a3d1e; /* D — accent hover */
+  --brass-800: #4a3116; /* D — accent pressed, occluded metal edge */
+
+  /* Glass — the lit slot inside a brass fixture. The ONLY near-whites the
+     design permits: they read as emission because their surround is metal, a
+     ~4.8:1 local jump, not because they are bright against stone. */
+  --glass-100: #fffdf6; /* D */
+  --glass-200: #fdf2d6; /* D */
+
+  /* Espresso — the picture frame and the floor. Now the ink. */
+  --espresso-500: #4a3436; /* D */
+  --espresso-600: #362628; /* M — body text, inverted band */
+
+  /* Midnight — the suit. Survives as ink for small UI text and as the
+     darkest inverted surface. */
+  --midnight-900: #070611; /* M */
+
+  /* State — all four re-derived for a light ground; the dark-theme values
+     landed between 2.2 and 3.9:1 here. */
+  --state-success: #41602b; /* D */
+  --state-warning: #6e4a0e; /* D */
+  --state-error: #8e2f26; /* D */
+  --state-info: #3f4d6b; /* D */
+
+  /* Spacing — 4px base */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Vertical rhythm — five tiers, driven by px + vw, never by vh.
+     A vh term makes empty space scale with the window, which has nothing to
+     do with the content: the same page grew ~900px taller on a 1080p screen
+     than on a 900p one purely because the window was bigger. */
+  --rhythm-1: 1.5rem; /* inside a component        */
+  --rhythm-2: 2rem; /* between components        */
+  --rhythm-3: clamp(2.5rem, 1.5rem + 2.6vw, 4rem); /* tight section   */
+  --rhythm-4: clamp(3.25rem, 2rem + 3.4vw, 5rem); /* section         */
+  --rhythm-5: clamp(4.5rem, 2.5rem + 5.5vw, 7.5rem); /* chapter      */
+
+  /* Radius */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 999px;
+
+  /* Duration */
+  --dur-instant: 120ms;
+  --dur-fast: 180ms;
+  --dur-base: 280ms;
+  --dur-slow: 560ms;
+  --dur-cinema: 900ms;
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* === SEMANTIC =========================================================== */
+:root {
+  /* Grounds. Sections alternate between these so every seam is a material
+     change rather than a featureless expanse. */
+  --canvas: var(--travertine-25);
+  --card: var(--travertine-0);
+  --surface-hover: var(--travertine-50);
+  --band: var(--travertine-100);
+  --band-deep: var(--travertine-200);
+  --invert: var(--espresso-600);
+  --invert-deep: var(--midnight-900);
+
+  /* Ink. Espresso for reading, midnight for small high-emphasis UI. The two
+     are 1.29:1 apart, so this is a role split, not a visible colour split. */
+  --text-display: var(--espresso-600); /* 9.17 worst  */
+  --text: var(--espresso-600); /* 9.17 worst  */
+  --text-secondary: var(--espresso-500); /* 7.32 worst  */
+  --text-strong: var(--midnight-900); /* 12.88 worst */
+  --text-muted: var(--travertine-700); /* 4.60 worst  */
+  --on-invert: var(--travertine-25);
+  --on-invert-muted: var(--travertine-300);
+
+  /* Accent. Brass, dark enough to be read. */
+  --accent: var(--brass-700); /* 5.10 worst */
+  --accent-hover: var(--brass-750);
+  --accent-press: var(--brass-800);
+  /* 3.07:1 — NON-TEXT and >=24px text only: fills, borders, rules, nodes.
+     A decorative glyph like a bullet diamond is still text to WCAG, so those
+     use --accent even at 8px. */
+  --accent-large: var(--brass-600);
+  --accent-on-invert: var(--brass-300);
+  --accent-contrast: var(--travertine-25);
+
+  /* Metal. For gradients and fills that depict brass as an object. */
+  --metal: var(--brass-400);
+  --metal-sheen: var(--brass-100);
+  --metal-shadow: var(--brass-800);
+
+  /* Lines. `--border` and `--hairline` are decorative and sit below 3:1 by
+     design; anything that is the sole boundary of a control uses
+     `--border-control`, which clears it. */
+  --hairline: var(--travertine-200);
+  --border: var(--travertine-300);
+  --border-control: var(--travertine-700); /* 4.60 worst */
+  --focus-ring: var(--brass-700);
+
+  --success: var(--state-success);
+  --warning: var(--state-warning);
+  --error: var(--state-error);
+  --info: var(--state-info);
+
+  --motion-state: var(--dur-fast);
+  --motion-reveal: var(--dur-slow);
+  --motion-scene: var(--dur-cinema);
+
+  /* Type scale. Tracking is tighter and display leading looser than the dark
+     theme used: on a bright field the ground bleeds into counters and
+     sidebearings, so identical tracking reads looser and leading reads
+     tighter than it did on midnight. */
+  --type-hero: clamp(3rem, 11vw, 10rem);
+  --type-h1: clamp(2.25rem, 5.6vw, 5rem);
+  --type-h2: clamp(1.875rem, 3.6vw, 3rem);
+  --type-h3: clamp(1.3rem, 1.9vw, 1.6875rem);
+  --type-lead: clamp(1.0625rem, 1.6vw, 1.3125rem);
+  --type-body: 1rem;
+  --type-caption: 0.875rem;
+  --type-label: 0.75rem; /* 12px floor for all-caps mono */
+  --type-tag: 0.6875rem;
+
+  /* Layout */
+  --shell: 1440px;
+  --measure: 64ch;
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --nav-h: 4.5rem;
+
+  /* Where the hero's brass fixtures hang, and therefore where the wall-wash
+     is centred. Declared once so the light and the thing emitting it cannot
+     drift apart — they were ~68px out of sync when each carried its own
+     hard-coded percentage. */
+  --fixture-l-x: 64%;
+  --fixture-r-x: 94%;
+
+  /* Elevation. On bone the shadow is the only dark thing on the page and
+     reads 3-4x heavier than the same alpha did on midnight, so the usable
+     range is 0.05-0.22, not 0.6-0.9. Tinted with espresso, never neutral
+     grey — grey shadows go muddy over a warm ground. */
+  --shadow-sm: 0 1px 2px rgb(54 38 40 / 0.07);
+  --shadow-md: 0 2px 4px rgb(54 38 40 / 0.05), 0 10px 24px -12px rgb(54 38 40 / 0.16);
+  --shadow-lg: 0 3px 6px rgb(54 38 40 / 0.06), 0 24px 56px -20px rgb(54 38 40 / 0.2);
+  --shadow-contact: 0 2px 6px rgb(54 38 40 / 0.18);
+}
+
+/* === COMPONENT ========================================================== */
+:root {
+  /* A near-black pill on warm stone: the primary action reads as ink on
+     paper, and it clears 18.87:1 — brass could not do either. */
+  --btn-bg: var(--midnight-900);
+  --btn-fg: var(--travertine-25);
+  --btn-bg-hover: var(--espresso-600);
+  --btn-radius: var(--radius-full);
+  --btn-pad-x: var(--space-8);
+  --btn-pad-y: var(--space-3);
+
+  --card-bg: var(--card);
+  --card-border: var(--border);
+  --card-radius: var(--radius-md);
+  --card-pad: var(--space-8);
+
+  --fixture-core: var(--brass-100);
+  --fixture-body: var(--brass-400);
+  --fixture-housing: var(--brass-600);
+  --fixture-occluded: var(--brass-800);
+  --fixture-glass-hi: var(--glass-100);
+  --fixture-glass-lo: var(--glass-200);
+
+  --plaque-bg: var(--card);
+  --plaque-rule: var(--brass-600);
+  --plaque-label: var(--text-muted);
+}

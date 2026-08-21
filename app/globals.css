@@ -1,0 +1,806 @@
+/* Cascade order is set by the import order in app/layout.tsx, NOT here.
+   `@import` statements are hoisted above every other rule in the file, so
+   importing the component sheets from this file put them *earlier* in the
+   cascade than this file's own base rules — and equal-specificity base rules
+   like `.plaque { display: block }` then silently beat `.work-plaque
+   { display: flex }`. Importing from layout.tsx in dependency order keeps
+   base first and components last, which is what the layering intends. */
+
+/* ==========================================================================
+   RESET
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto; /* Lenis owns scrolling; native smooth would fight it */
+  /* Reserve the scrollbar track so locking the body for a modal does not
+     shift the entire page 15px sideways. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-size: var(--type-body);
+  line-height: 1.7;
+  /* Instrument Serif ships one 400 cut with no weight axis, so any stray
+     font-weight >=500 on a display element would synthesise a smeared bold —
+     the ugliest artefact available on a light ground. */
+  font-synthesis-weight: none;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  overflow-x: hidden;
+  /* Deliberately NOT setting -webkit-font-smoothing: antialiased.
+     Forcing grayscale AA discards sub-pixel stem information. Light-on-dark
+     blooms, so thinning it back is correct there — but dark-on-light is
+     already optically thinned by irradiation against a bright field, and
+     antialiasing it a second time makes the whole body layer spindly and
+     grey while every measured contrast ratio still reads AAA. That is the
+     worst class of defect: the audit passes and the page looks weak. */
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+p,
+h1,
+h2,
+h3,
+h4 {
+  overflow-wrap: break-word;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--brass-200);
+  color: var(--midnight-900);
+}
+
+/* Every in-page anchor would otherwise land under the fixed nav. */
+:where([id]) {
+  scroll-margin-top: calc(var(--nav-h) + var(--space-4));
+}
+
+/* Visible focus, always. Never removed — only restyled. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+/* The light-ground brass is 2.52:1 against the inverted band, under the 3:1 of
+   1.4.11. Every focusable in the closing section and the footer needs the
+   inverted accent, which measures 10.36:1 there. */
+.on-invert :focus-visible {
+  outline-color: var(--accent-on-invert);
+}
+
+/* Skip link */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  padding: var(--space-3) var(--space-6);
+  background: var(--midnight-900);
+  color: var(--travertine-25);
+  font-weight: 600;
+}
+.skip:focus {
+  left: var(--space-4);
+  top: var(--space-4);
+}
+
+/* ==========================================================================
+   TYPOGRAPHY
+
+   Tracking is tighter and display leading looser than the dark theme used.
+   On a bright field the ground bleeds into counters and sidebearings, so
+   identical tracking reads looser and identical leading reads tighter than
+   it did on midnight.
+   ========================================================================== */
+.display {
+  font-family: var(--font-display), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.024em;
+}
+
+.hero-type {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--type-hero);
+  line-height: 0.9;
+  letter-spacing: -0.042em;
+  font-weight: 400;
+  color: var(--text-display);
+}
+
+h1,
+.h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--type-h1);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+  color: var(--text-display);
+}
+
+h2,
+.h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--type-h2);
+  line-height: 1.08;
+  letter-spacing: -0.024em;
+  font-weight: 400;
+  color: var(--text-display);
+}
+
+h3,
+.h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--type-h3);
+  line-height: 1.26;
+  letter-spacing: -0.012em;
+  font-weight: 400;
+  color: var(--text-display);
+}
+
+.lead {
+  font-size: var(--type-lead);
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  color: var(--text-secondary);
+  max-width: 46ch;
+}
+
+.prose p {
+  max-width: var(--measure);
+  color: var(--text);
+}
+/* Flow spacing on the wrapper, not the paragraph.
+   Each <p> here is wrapped in its own reveal <div>, which makes every
+   paragraph a :last-child — so a `p:last-child { margin-bottom: 0 }` rule
+   silently collapses the space after *every* paragraph, not just the last.
+   Spacing the siblings instead is immune to how deeply the p is wrapped. */
+.prose > * + * {
+  margin-top: var(--space-6);
+}
+.prose code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.9em;
+  color: var(--accent-press);
+  background: var(--band);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius-sm);
+}
+
+.italic-serif {
+  font-family: var(--font-display), Georgia, serif;
+  font-style: italic;
+}
+
+/* Mono label — the workhorse for eyebrows, numbers, dates, tags.
+   12px is a floor, not a preference: the brand typography reference sets a
+   hard 12px minimum for captions, and small text needs the full 4.5:1. */
+.label {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.label-accent {
+  color: var(--accent);
+}
+
+.mono {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+.strong {
+  color: var(--text-strong);
+}
+.brass {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   LAYOUT
+
+   One `padding-block` declaration governs every section. It reads from
+   `--section-pad-*` so a variant sets a custom property instead of adding a
+   competing `padding-block` — which is how `.contact` ended up silently
+   winning a 288px-per-side collision against `.section`.
+   ========================================================================== */
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-pad-t, var(--rhythm-4))
+    var(--section-pad-b, var(--rhythm-4));
+}
+
+.section-tight {
+  --section-pad-t: var(--rhythm-3);
+  --section-pad-b: var(--rhythm-3);
+}
+
+/* Ground utilities. Alternating grounds section by section is what keeps a
+   ~160px seam reading as structure rather than as an empty page — but each
+   section sets its own `background` in components.css, so only `.on-invert`
+   is used as a class (it also remaps ink, accent and border roles). */
+.on-invert {
+  background: var(--invert-deep);
+  color: var(--on-invert-muted);
+}
+.on-invert .hero-type,
+.on-invert h1,
+.on-invert h2,
+.on-invert h3,
+.on-invert .h1,
+.on-invert .h2,
+.on-invert .h3,
+.on-invert .strong {
+  color: var(--on-invert);
+}
+.on-invert .label {
+  color: var(--travertine-400);
+}
+.on-invert .label-accent,
+.on-invert .brass {
+  color: var(--accent-on-invert);
+}
+.on-invert .lead {
+  color: var(--travertine-200);
+}
+
+/* Section eyebrow: number + rule + title */
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--rhythm-2);
+}
+.eyebrow .rule {
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+  transform: translateY(-0.35em);
+}
+.on-invert .eyebrow .rule {
+  background: color-mix(in oklab, var(--travertine-300) 32%, transparent);
+}
+
+/* A hairline that draws itself in on reveal */
+.brass-rule {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--brass-600),
+    color-mix(in oklab, var(--brass-600) 12%, transparent)
+  );
+  transform-origin: left center;
+}
+
+/* ==========================================================================
+   STONE — the travertine substrate.
+
+   On a light ground light is depicted by SUBTRACTION. The tile multiplies
+   into the bone rather than blending its luminosity: a `luminosity` blend
+   overwrites the canvas lightness with the photograph's mid-grey while
+   keeping the canvas chroma, which turns the whole page to dishwater. The
+   filter chain is arithmetic, not taste — it compresses the tile into
+   roughly the 0.90-1.00 luminance band so a 42% multiply subtracts ~0-8%.
+   ========================================================================== */
+.stone {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.stone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/img/travertine.jpg");
+  background-size: 760px 760px;
+  background-repeat: repeat;
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+  filter: grayscale(0.32) sepia(0.14) brightness(1.36) contrast(0.74);
+}
+
+/* Grain — kills banding on the large light gradients. It matters more here
+   than on midnight: bone gradients band harder because eye sensitivity peaks
+   in the top luminance decile. Multiply, because mid-grey noise composited
+   normally would lighten a light ground instead of texturing it. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   WALL-WASH — what the sconce glow becomes on a light ground.
+
+   The canvas sits ~2.3 L* from pure white, so an additive bloom has almost
+   no headroom and renders as nothing. Instead, two multiplied radial
+   gradients darken everything the sconces do NOT reach: where both are
+   transparent the canvas shows at full brightness, and the falloff drifts
+   toward the measured band tone. Multiplying warm amber over bone yields a
+   warmer, slightly darker cream — physically what travertine does under a
+   brass sconce.
+   ========================================================================== */
+.wall-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background:
+    radial-gradient(
+      54% 44% at var(--fixture-l-x) 10%,
+      transparent 0%,
+      color-mix(in oklab, var(--travertine-200) 0%, transparent) 32%,
+      color-mix(in oklab, var(--travertine-200) 50%, transparent) 100%
+    ),
+    radial-gradient(
+      54% 44% at var(--fixture-r-x) 10%,
+      transparent 0%,
+      color-mix(in oklab, var(--travertine-200) 0%, transparent) 32%,
+      color-mix(in oklab, var(--travertine-200) 50%, transparent) 100%
+    ),
+    radial-gradient(
+      32% 28% at var(--fixture-l-x) 8%,
+      color-mix(in oklab, var(--brass-200) 15%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      32% 28% at var(--fixture-r-x) 8%,
+      color-mix(in oklab, var(--brass-200) 15%, transparent),
+      transparent 70%
+    );
+}
+
+/* ==========================================================================
+   FIXTURE — the brass sconce as a physical object.
+
+   A glow cannot read as light against bone, so the sconce stops being light
+   and becomes the thing that emits it. The dark ramp stops carry the
+   object's boundary (brass-800 is 11.3:1 against the canvas) so the fixture
+   clears 3:1 even though its brightest stops are 1.1:1. The aperture reads
+   as emitting because near-white against brass is a ~4.8:1 LOCAL jump —
+   available only because its surround is metal, not stone. This is the only
+   place a near-white is permitted on the page.
+   ========================================================================== */
+.fixture {
+  position: absolute;
+  width: clamp(1.25rem, 1.8vw, 1.75rem);
+  aspect-ratio: 1 / 3.6;
+  border-radius: 2px 2px 3px 3px;
+  background: linear-gradient(
+    96deg,
+    var(--brass-800) 0%,
+    var(--brass-700) 9%,
+    var(--brass-600) 22%,
+    var(--brass-400) 34%,
+    var(--brass-200) 45%,
+    var(--brass-100) 50%,
+    var(--brass-300) 57%,
+    var(--brass-400) 68%,
+    var(--brass-600) 82%,
+    var(--brass-700) 93%,
+    var(--brass-800) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--brass-100) 85%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--brass-800) 90%, transparent),
+    var(--shadow-contact),
+    0 18px 44px -14px color-mix(in oklab, var(--espresso-600) 26%, transparent);
+}
+
+.fixture::before {
+  /* the lit slot */
+  content: "";
+  position: absolute;
+  inset: 12% 26% 58% 26%;
+  border-radius: 1px;
+  background: linear-gradient(
+    var(--fixture-glass-hi),
+    var(--fixture-glass-lo) 62%,
+    var(--brass-200)
+  );
+  box-shadow: 0 0 6px 1px rgb(240 220 174 / 0.75);
+}
+
+/* ==========================================================================
+   REVEALS
+
+   The start state lives in CSS, not in a `gsap.from()` call. `from` sets its
+   start state at construction — i.e. after hydration — so the server HTML
+   paints fully opaque, GSAP yanks it to 0, and it fades back in. That is a
+   subtle blink on midnight and a bright flash on every block of a light
+   page. `scripting: enabled` means a no-JS visitor still gets visible text.
+   ========================================================================== */
+.rv-line {
+  display: block;
+  overflow: hidden;
+}
+.rv-word {
+  display: inline-block;
+}
+/* Context-aware, because an accented word can land on either ground and
+   brass-700 is only 2.52:1 against the inverted band. */
+.rv-accent {
+  color: var(--accent);
+}
+.on-invert .rv-accent {
+  color: var(--accent-on-invert);
+}
+
+/* The start state is the PARENT's opacity, never a transform on the words.
+   A CSS transform on `.rv-word` is reported by getComputedStyle as a resolved
+   matrix, so GSAP reads `translate3d(0, 118%, 0)` as `y: 168px` and a tween
+   declared in `yPercent` then fights a `y` it did not set. Leaving the words
+   untransformed means GSAP owns that axis outright; the words start clipped by
+   `.rv-line { overflow: hidden }` instead. */
+@media (scripting: enabled) {
+  [data-reveal],
+  [data-reveal-words] {
+    opacity: 0;
+  }
+  /* Failsafe. `scripting: enabled` only says JS is permitted — not that the
+     bundle ran. One 404 on a chunk otherwise leaves every reveal block at
+     opacity 0 for good, starting with the hero name. `reveals-armed` is set
+     from SmoothScroll's effect, so this rule stops matching the moment the
+     real reveal system is alive, and fires only when it never arrives. */
+  html:not(.reveals-armed) [data-reveal],
+  html:not(.reveals-armed) [data-reveal-words] {
+    animation: reveal-failsafe 0.24s linear 2.5s forwards;
+  }
+}
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   BUTTONS & LINKS
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border-radius: var(--btn-radius);
+  font-size: var(--type-caption);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  transition:
+    background var(--motion-state) var(--ease-out),
+    color var(--motion-state) var(--ease-out),
+    border-color var(--motion-state) var(--ease-out),
+    box-shadow var(--motion-state) var(--ease-out),
+    transform var(--motion-state) var(--ease-out);
+  min-height: 44px;
+}
+
+.btn-primary {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+  background: var(--btn-bg-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-ghost {
+  border: 1px solid var(--border-control);
+  color: var(--text-strong);
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.on-invert .btn-primary {
+  background: var(--travertine-25);
+  color: var(--midnight-900);
+}
+.on-invert .btn-primary:hover {
+  background: var(--travertine-100);
+}
+.on-invert .btn-ghost {
+  border-color: color-mix(in oklab, var(--travertine-300) 44%, transparent);
+  color: var(--travertine-25);
+}
+.on-invert .btn-ghost:hover {
+  border-color: var(--accent-on-invert);
+  color: var(--accent-on-invert);
+  background: transparent;
+}
+
+/* An underline that is always present on body links and thickens on hover —
+   on a light editorial page colour alone is a weak affordance, and 1.4.1
+   asks for more than hue anyway. */
+.link {
+  position: relative;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in oklab, var(--accent) 38%, transparent);
+  transition:
+    color var(--motion-state) var(--ease-out),
+    text-decoration-color var(--motion-state) var(--ease-out);
+}
+.link:hover {
+  color: var(--accent-hover);
+  text-decoration-color: currentColor;
+}
+.on-invert .link {
+  color: var(--accent-on-invert);
+  text-decoration-color: color-mix(in oklab, var(--brass-300) 42%, transparent);
+}
+.on-invert .link:hover {
+  color: var(--brass-200);
+}
+
+/* ==========================================================================
+   PLAQUE — a framed project on the wall
+   ========================================================================== */
+.plaque {
+  position: relative;
+  display: block;
+  background: var(--plaque-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--motion-state) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.plaque::before {
+  /* the engraved brass line at the top edge */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--brass-700),
+    var(--brass-400) 42%,
+    var(--brass-600)
+  );
+  opacity: 0.55;
+  transition: opacity var(--motion-state) var(--ease-out);
+}
+
+.plaque:hover {
+  border-color: var(--brass-600);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.plaque:hover::before {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   CARD / METRIC
+   ========================================================================== */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-pad);
+  box-shadow: var(--shadow-sm);
+}
+
+.metric {
+  border-top: 1px solid var(--hairline);
+  padding-top: var(--space-4);
+}
+.metric-value {
+  /* Mono, not the display serif: Instrument Serif's 1 is a bare stem, so
+     "112K+" read as "ll2K+" at 40px. Mono is also tabular, so a row of
+     figures aligns, and it matches the label system. */
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* Digit runs inside display type. */
+.num {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.88em;
+  letter-spacing: -0.01em;
+}
+.metric-label {
+  margin-top: var(--space-2);
+  font-size: var(--type-caption);
+  color: var(--text);
+}
+.metric-note {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--type-label);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+.on-invert .metric {
+  border-top-color: color-mix(in oklab, var(--travertine-300) 26%, transparent);
+}
+.on-invert .metric-value {
+  color: var(--accent-on-invert);
+}
+.on-invert .metric-label {
+  color: var(--travertine-200);
+}
+.on-invert .metric-note {
+  color: var(--travertine-400);
+}
+
+/* Tag / chip */
+.tag {
+  display: inline-block;
+  padding: 0.34em 0.7em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--type-tag);
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--canvas);
+  white-space: nowrap;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 16%, transparent);
+}
+.status-dot[data-status="Research"] {
+  background: var(--info);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--info) 16%, transparent);
+}
+.status-dot[data-status="In development"] {
+  background: var(--warning);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--warning) 16%, transparent);
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+
+   Scoped rather than blanket. The old rule zeroed *every* transition, which
+   also killed hover, focus and colour crossfades — none of which are
+   vestibular triggers, and removing them makes the UI feel broken. This
+   keeps colour and opacity transitions at a short duration and kills the
+   transform ones.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color,
+      box-shadow, text-decoration-color !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal],
+  [data-reveal-words] {
+    opacity: 1 !important;
+  }
+  .rv-word {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   PRINT — the résumé fallback
+   ========================================================================== */
+@media print {
+  .stone,
+  .grain,
+  .wall-wash,
+  .fixture,
+  nav,
+  .marquee {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .hero-type,
+  h1,
+  h2,
+  h3 {
+    color: #000;
+  }
+  .on-invert {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

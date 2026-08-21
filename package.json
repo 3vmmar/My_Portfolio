@@ -1,0 +1,31 @@
+{
+  "name": "ammar-ahmed-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio of Ammar Ahmed - AI Engineer, CEO & Founder of Selvoria AI",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "tokens:check": "node scripts/check-tokens.mjs",
+    "verify": "npm run tokens:check && npm run typecheck && npm run build",
+    "brand:read": "node skills/brand/scripts/inject-brand-context.cjs --json"
+  },
+  "dependencies": {
+    "gsap": "3.13.0",
+    "lenis": "1.3.11",
+    "next": "16.3.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.8",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

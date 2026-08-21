@@ -1,0 +1,485 @@
+/* ==========================================================================
+   SCREEN-READER ONLY
+   ========================================================================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   READING PROGRESS
+   ========================================================================== */
+.readprog {
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 59;
+  background: var(--hairline);
+}
+.readprog-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--brass-600), var(--brass-700));
+  transform-origin: left;
+  transform: scaleX(0);
+  /* No CSS transition. The bar's scaleX is written directly from the scroll
+     position every frame, so a time-based transition would make it lag behind
+     the scroll and be provably wrong about where the reader is. */
+}
+
+/* ==========================================================================
+   CASE STUDY — HERO
+   ========================================================================== */
+.case-hero {
+  position: relative;
+  isolation: isolate;
+  padding-block: calc(var(--nav-h) + var(--rhythm-4)) var(--rhythm-3);
+  overflow: hidden;
+  background: var(--canvas);
+}
+.case-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.case-crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--rhythm-1);
+  flex-wrap: wrap;
+}
+.case-crumbs a {
+  transition: color var(--motion-state) var(--ease-out);
+}
+.case-crumbs a:hover {
+  color: var(--accent);
+}
+.case-crumb-sep {
+  color: var(--text-muted);
+}
+
+.case-title {
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  margin-bottom: var(--space-3);
+}
+.case-title .rv-line {
+  display: inline-block;
+}
+
+.case-subtitle {
+  max-width: 30ch;
+  color: var(--text-secondary);
+  margin-bottom: var(--rhythm-2);
+}
+
+/* One template for both rows, or the facts and the metrics under the same
+   hairline sit on different column edges (measured 110px and 219px apart). */
+.case-facts,
+.case-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+.case-facts {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--hairline);
+}
+@media (max-width: 900px) {
+  .case-facts,
+  .case-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .case-facts,
+  .case-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+.case-facts dt {
+  margin-bottom: 0.45rem;
+}
+.case-facts dd {
+  font-size: var(--type-caption);
+  color: var(--text-strong);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.case-facts-wide {
+  grid-column: 1 / -1;
+}
+.case-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Metrics now live inside the hero, one hairline below the facts they belong
+   to, instead of being a separate padded band two paddings away. */
+.case-metrics {
+  margin-top: var(--rhythm-1);
+  padding-top: var(--rhythm-1);
+  border-top: 1px solid var(--hairline);
+}
+
+/* ==========================================================================
+   BODY LAYOUT
+
+   The 12rem sticky label column is gone. It reserved 264px of the content
+   width — 20.6% — to carry at most 16 characters of 12px mono, and
+   `position: sticky` kept it hanging there, blank, for the whole section. It
+   was also why nothing aligned: the case title started at the shell edge
+   while every paragraph started 264px inside it.
+
+   A column survives only where it has a scroll-persistent job: the numbered
+   body sections keep a narrow sticky number gutter, because that number is
+   the reader's position indicator.
+   ========================================================================== */
+.case-two-col {
+  display: block;
+}
+.case-col-side {
+  position: static;
+  margin-bottom: var(--space-3);
+}
+.case-col-main {
+  min-width: 0;
+}
+
+.case-section .case-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 3.25rem) minmax(0, 1fr);
+  gap: clamp(1rem, 0.5rem + 1.4vw, 2rem);
+  align-items: start;
+}
+.case-section .case-col-side {
+  position: sticky;
+  top: calc(var(--nav-h) + var(--space-6));
+  margin-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  .case-section .case-two-col {
+    display: block;
+  }
+  .case-section .case-col-side {
+    position: static;
+    margin-bottom: var(--space-3);
+  }
+}
+
+.case-summary-lead {
+  max-width: 60ch;
+  color: var(--text-secondary);
+}
+
+.case-opening {
+  background: var(--band);
+}
+.case-opening-rule {
+  margin-block: var(--rhythm-1);
+  max-width: 6rem;
+}
+.case-problem-para {
+  font-size: 1.0625rem;
+}
+
+.case-section {
+  --section-pad-t: var(--rhythm-3);
+  --section-pad-b: var(--rhythm-3);
+  border-top: 1px solid var(--hairline);
+}
+.case-section-n {
+  color: var(--accent);
+}
+.case-section-rule {
+  margin-top: var(--space-3);
+  max-width: 2.5rem;
+}
+.case-section-title {
+  max-width: 28ch;
+  margin-bottom: var(--rhythm-1);
+}
+.case-section-prose p {
+  font-size: 1.0625rem;
+}
+
+.case-bullets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-6);
+  margin-top: var(--rhythm-1);
+  padding-top: var(--rhythm-1);
+  border-top: 1px solid var(--hairline);
+}
+.case-bullet {
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--brass-600);
+}
+.case-bullet-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-strong);
+  margin-bottom: 0.4rem;
+}
+.case-bullet p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   FLOW DIAGRAM — now a figure inside the section it explains
+   ========================================================================== */
+.case-figure {
+  margin-top: var(--rhythm-2);
+  padding-top: var(--rhythm-1);
+  border-top: 1px solid var(--hairline);
+}
+.flow {
+  margin: 0;
+}
+.flow-head {
+  margin-bottom: var(--space-5);
+}
+.flow-caption {
+  margin-top: var(--space-2);
+  font-size: var(--type-caption);
+  max-width: 68ch;
+}
+.flow-scroll {
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+  /* The diagram is wider than a phone; it scrolls inside its own box so the
+     page body never scrolls sideways. */
+  scrollbar-width: thin;
+  /* travertine-400 is 2.04:1 on the card — under the 3:1 non-text minimum. */
+  scrollbar-color: var(--travertine-600) transparent;
+}
+.flow-scroll:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+.flow-svg {
+  min-width: 100%;
+  height: auto;
+  max-width: none;
+}
+.flow-node-label {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  fill: var(--text-strong);
+}
+.flow-node-sub {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  fill: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.flow-edge-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  fill: var(--accent);
+  letter-spacing: 0.06em;
+  /* Knock the ground out behind the glyphs so an edge label stays readable
+     where it crosses a connector or a neighbouring node's caption.
+     paint-order puts the stroke under the fill, making it a halo. */
+  paint-order: stroke;
+  stroke: var(--canvas);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* ==========================================================================
+   BAR CHART
+   ========================================================================== */
+.chart-head {
+  margin-bottom: var(--space-5);
+}
+.chart-caption {
+  margin-top: var(--space-2);
+  font-size: var(--type-caption);
+  max-width: 62ch;
+}
+.chart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.chart-table tr {
+  border-bottom: 1px solid var(--hairline);
+}
+.chart-label {
+  text-align: left;
+  font-weight: 400;
+  font-size: var(--type-caption);
+  color: var(--text);
+  padding: 0.7rem var(--space-4) 0.7rem 0;
+  width: 42%;
+  vertical-align: middle;
+}
+.chart-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: 0.7rem;
+}
+.chart-track {
+  flex: 1;
+  display: block;
+  min-width: 0;
+}
+.chart-bar {
+  display: block;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--travertine-400);
+  min-width: 3px;
+}
+.chart-table tr.is-highlight .chart-bar {
+  background: var(--brass-600);
+}
+.chart-table tr.is-highlight .chart-label {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+.chart-value {
+  font-size: var(--type-caption);
+  color: var(--text-strong);
+  flex-shrink: 0;
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+/* ==========================================================================
+   OUTCOME + STACK — one closing block
+   ========================================================================== */
+.case-outcome {
+  position: relative;
+  isolation: isolate;
+  border-top: 1px solid var(--hairline);
+  background: var(--band);
+}
+.case-outcome > .shell {
+  position: relative;
+  z-index: 1;
+}
+.case-outcome-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.case-outcome-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+.case-outcome-mark {
+  color: var(--accent);
+  font-size: 0.6rem;
+  line-height: 2.4;
+}
+.case-outcome-row p {
+  font-size: 1.0625rem;
+  max-width: 62ch;
+}
+
+.case-stack-row {
+  margin-top: var(--rhythm-1);
+  padding-top: var(--rhythm-1);
+  border-top: 1px solid var(--travertine-300);
+}
+.case-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: var(--space-3);
+}
+
+/* ==========================================================================
+   NEXT / PREV
+   ========================================================================== */
+.case-next {
+  padding-block: var(--rhythm-4);
+  /* --hairline equals --band-deep, so it would paint at 1:1 on this surface. */
+  border-top: 1px solid var(--border);
+  background: var(--band-deep);
+}
+.case-next-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--rhythm-1);
+}
+.case-next-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--motion-state) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+.case-next-link:hover {
+  border-color: var(--brass-600);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.case-next-link.is-next {
+  text-align: right;
+}
+.case-next-sub {
+  font-size: var(--type-caption);
+}
+.case-next-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ==========================================================================
+   404
+   ========================================================================== */
+.nf {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--canvas);
+}
+.nf-inner {
+  position: relative;
+  z-index: 1;
+}
+.nf-fixture {
+  left: clamp(1rem, 6vw, 6rem);
+  top: clamp(4rem, 12vh, 8rem);
+}
+.nf-code {
+  font-size: clamp(4.5rem, 18vw, 12rem);
+  line-height: 0.85;
+  color: var(--travertine-400);
+  margin-bottom: var(--rhythm-1);
+}
+.nf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--rhythm-2);
+}
