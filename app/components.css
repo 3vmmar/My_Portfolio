@@ -52,6 +52,9 @@
   border-color: var(--accent);
   background: var(--surface-hover);
 }
+.monogram:active {
+  background: var(--band);
+}
 .monogram-mark {
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.15rem;
@@ -95,6 +98,9 @@
 .nav-link:hover {
   color: var(--text-strong);
 }
+.nav-link:active {
+  color: var(--accent-press);
+}
 .nav-link:hover::after {
   transform: scaleX(1);
 }
@@ -131,6 +137,9 @@
   border-color: var(--accent);
   color: var(--accent);
   background: var(--surface-hover);
+}
+.nav-cmd:active {
+  background: var(--band);
 }
 .nav-cmd-hint {
   font-size: var(--type-tag);
@@ -211,6 +220,9 @@
 }
 .sheet-link:hover {
   color: var(--accent);
+}
+.sheet-link:active {
+  color: var(--accent-press);
 }
 
 @media (max-width: 900px) {
@@ -905,9 +917,10 @@ kbd {
   border-radius: var(--card-radius);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  /* Same single clock as .plaque and .case-next-link. */
   transition:
-    border-color var(--motion-state) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out);
+    border-color var(--motion-lift) var(--ease-out),
+    box-shadow var(--motion-lift) var(--ease-out);
 }
 .selvoria-division.is-focus > article {
   border-color: var(--brass-600);
@@ -1315,9 +1328,20 @@ kbd {
     padding-inline var(--motion-state) var(--ease-out),
     background var(--motion-state) var(--ease-out);
 }
+/* This was `padding-inline`, the only layout-animating property on the site:
+   hovering a row reflowed a three-column grid inside a flex column, 180ms of
+   layout per pointer move. translateX buys the identical inset on the
+   compositor. The row keeps its padding so the hit area never changes. */
 .contact-row:hover {
   background: color-mix(in oklab, var(--travertine-100) 8%, transparent);
-  padding-inline: var(--space-4);
+}
+.contact-row:hover .label,
+.contact-row:hover .contact-row-value {
+  transform: translateX(var(--space-3));
+}
+.contact-row .label,
+.contact-row .contact-row-value {
+  transition: transform var(--motion-state) var(--ease-out);
 }
 .contact-row-value {
   color: var(--travertine-25);
@@ -1334,6 +1358,10 @@ kbd {
 .contact-row:hover .contact-row-arrow {
   transform: translateX(4px);
   color: var(--brass-200);
+}
+/* Deeper than the hover wash, so a tap on the inverted band registers. */
+.contact-row:active {
+  background: color-mix(in oklab, var(--travertine-100) 16%, transparent);
 }
 
 .contact-aside {
@@ -1416,6 +1444,20 @@ kbd {
 .footer-col li {
   font-size: var(--type-caption);
   color: var(--travertine-200);
+}
+/* Caption-sized links are 18px tall; SC 2.5.8 wants 24px. Grow the hit area
+   with a pseudo-element — padding here would open up the column rhythm.
+   6px of growth against an 8px list gap, so neighbours never overlap.
+   ::before, not ::after — the print sheet appends external URLs via
+   a[href^="http"]::after at equal specificity, and this sheet loads later,
+   so an ::after here would silently win and blank the printed URL. */
+.footer-col a {
+  position: relative;
+}
+.footer-col a::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0;
 }
 
 .footer-base {

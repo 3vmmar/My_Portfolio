@@ -62,7 +62,13 @@ export default function Experience() {
             // a node reads as "loading".
             tl.fromTo(
               node,
-              { scale: 0.6, boxShadow: "0 0 0 4px var(--band)" },
+              // Both states carry the same two-shadow structure. They used to
+              // be one shadow -> two, which GSAP cannot interpolate
+              // component-wise, so the glow snapped in instead of spreading.
+              {
+                scale: 0.6,
+                boxShadow: "0 0 0 4px var(--band), 0 0 0 0 rgb(147 106 61 / 0)",
+              },
               {
                 scale: 1,
                 boxShadow:

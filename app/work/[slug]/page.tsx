@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects, projectBySlug, adjacentProjects } from "@/lib/projects";
+import { projects, adjacentProjects } from "@/lib/projects";
+import { fullProject } from "@/lib/caseStudies";
 import { identity } from "@/lib/content";
 import { Reveal, WordReveal, BrassRule } from "@/components/ui/Reveal";
 import FlowDiagram from "@/components/ui/FlowDiagram";
@@ -18,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = projectBySlug(slug);
+  const p = fullProject(slug);
   if (!p) return { title: "Not found" };
 
   return {
@@ -71,7 +72,7 @@ export default async function CaseStudy({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const p = projectBySlug(slug);
+  const p = fullProject(slug);
   if (!p) notFound();
 
   const { prev, next } = adjacentProjects(p.slug);

@@ -354,7 +354,18 @@ h3,
   content: "";
   position: absolute;
   inset: 0;
+  /* The tile is the LCP element on this page, so its weight is load-bearing.
+     AVIF q45 is 88KB against the JPEG’s 243KB and composites to a mean
+     difference of 0.50/255 through the filter chain below — the chain crushes
+     the tile into a narrow luminance band, so the codec has almost nothing
+     left to lose. The bare url() first is the fallback for engines without
+     image-set(); they get the JPEG. */
   background-image: url("/img/travertine.jpg");
+  background-image: image-set(
+    url("/img/travertine.avif") type("image/avif"),
+    url("/img/travertine.webp") type("image/webp"),
+    url("/img/travertine.jpg") type("image/jpeg")
+  );
   background-size: 760px 760px;
   background-repeat: repeat;
   opacity: 0.42;
@@ -567,6 +578,16 @@ h3,
   color: var(--accent);
   background: var(--surface-hover);
 }
+/* PRESS — .btn-primary already sets the language: hover lifts, press settles.
+   Carried across the rest of the controls here, which had hover states but no
+   press state. It matters most on touch, where :hover never fires and a tap
+   otherwise gives no feedback at all that it landed. --accent-press was
+   already in the ramp waiting for exactly this. */
+.btn-ghost:active {
+  background: var(--band);
+  border-color: var(--accent);
+  color: var(--accent-press);
+}
 
 .on-invert .btn-primary {
   background: var(--travertine-25);
@@ -574,6 +595,9 @@ h3,
 }
 .on-invert .btn-primary:hover {
   background: var(--travertine-100);
+}
+.on-invert .btn-primary:active {
+  background: var(--band-deep);
 }
 .on-invert .btn-ghost {
   border-color: color-mix(in oklab, var(--travertine-300) 44%, transparent);
@@ -583,6 +607,9 @@ h3,
   border-color: var(--accent-on-invert);
   color: var(--accent-on-invert);
   background: transparent;
+}
+.on-invert .btn-ghost:active {
+  background: color-mix(in oklab, var(--travertine-25) 12%, transparent);
 }
 
 /* An underline that is always present on body links and thickens on hover —
@@ -603,12 +630,19 @@ h3,
   color: var(--accent-hover);
   text-decoration-color: currentColor;
 }
+.link:active {
+  color: var(--accent-press);
+}
 .on-invert .link {
   color: var(--accent-on-invert);
   text-decoration-color: color-mix(in oklab, var(--brass-300) 42%, transparent);
 }
 .on-invert .link:hover {
   color: var(--brass-200);
+}
+/* On the dark ground the press has to go lighter, not darker. */
+.on-invert .link:active {
+  color: var(--brass-100);
 }
 
 /* ==========================================================================
@@ -623,10 +657,11 @@ h3,
   padding: clamp(1.5rem, 3vw, 2.25rem);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  /* One gesture, one clock — border, shadow and lift all on --motion-lift. */
   transition:
-    border-color var(--motion-state) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
+    border-color var(--motion-lift) var(--ease-out),
+    box-shadow var(--motion-lift) var(--ease-out),
+    transform var(--motion-lift) var(--ease-out);
 }
 
 .plaque::before {
@@ -652,8 +687,14 @@ h3,
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
+/* All three properties of the lift now share --motion-lift; see tokens.css. */
 .plaque:hover::before {
   opacity: 1;
+}
+/* The plaque lifts 2px on hover; pressing sets it back down on the wall. */
+.plaque:active {
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ==========================================================================
@@ -780,13 +821,20 @@ h3,
 /* ==========================================================================
    PRINT — the résumé fallback
    ========================================================================== */
+@page {
+  margin: 16mm;
+}
+
 @media print {
   .stone,
   .grain,
   .wall-wash,
   .fixture,
   nav,
-  .marquee {
+  .marquee,
+  .skip,
+  .readprog,
+  .cmdk-backdrop {
     display: none !important;
   }
   body {
@@ -802,5 +850,31 @@ h3,
   .on-invert {
     background: #fff !important;
     color: #000 !important;
+  }
+  /* .on-invert above resets the band to white but its links kept the brass
+     picked for a dark ground — brass-300 prints at 1.94:1 on white, which
+     is effectively blank. Every link goes to ink; the underline on .link is
+     what keeps them identifiable as links once colour is gone. */
+  a,
+  .on-invert a,
+  .on-invert .link {
+    color: #000 !important;
+    text-decoration-color: #000 !important;
+  }
+  /* Paper cannot be clicked. Spell out external destinations only — internal
+     hrefs print as bare paths, which help nobody, and the contact block
+     already carries the email and phone as plain text. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    font-weight: 400;
+    word-break: break-all;
+  }
+  /* Keep a project, card or case block from being split across a page. */
+  .plaque,
+  .card,
+  .work-card,
+  .case-next-link {
+    break-inside: avoid;
   }
 }

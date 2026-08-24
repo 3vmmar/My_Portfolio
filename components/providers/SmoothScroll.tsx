@@ -5,21 +5,12 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePathname } from "next/navigation";
+import { registerScrollEngine } from "@/components/providers/scrollLock";
 
-/** Shared handle so modal surfaces can actually stop the page scrolling. */
-let lenisInstance: Lenis | null = null;
-
-/**
- * `body { overflow: hidden }` does not stop Lenis — Lenis preventDefaults the
- * wheel and calls `window.scrollTo` itself, so a modal that only sets overflow
- * lets the page scroll ~960px behind it while the modal's own overflowing list
- * refuses to scroll at all. Anything that opens a modal surface must call this.
- */
-export function lockPageScroll(locked: boolean) {
-  document.body.style.overflow = locked ? "hidden" : "";
-  if (locked) lenisInstance?.stop();
-  else lenisInstance?.start();
-}
+// lockPageScroll now lives in ./scrollLock so that Nav and CommandPalette can
+// import it without dragging Lenis, gsap and ScrollTrigger along with it.
+// Re-exported here so existing import sites keep working.
+export { lockPageScroll } from "@/components/providers/scrollLock";
 
 /**
  * Smooth scroll, driven from GSAP's ticker rather than its own
@@ -61,7 +52,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       touchMultiplier: 1.6,
     });
     lenisRef.current = lenis;
-    lenisInstance = lenis;
+    registerScrollEngine(lenis);
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -80,7 +71,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       gsap.ticker.lagSmoothing(500, 33); // restore the library default
       lenis.destroy();
       lenisRef.current = null;
-      lenisInstance = null;
+      registerScrollEngine(null);
     };
   }, []);
 

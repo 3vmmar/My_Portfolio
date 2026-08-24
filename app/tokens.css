@@ -110,10 +110,22 @@
   --dur-slow: 560ms;
   --dur-cinema: 900ms;
 
-  /* Easing */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Easing.
+
+     --ease-out was cubic-bezier(0.16, 1, 0.3, 1). That is easeOutExpo, and it
+     covers ~86% of its distance in the first 25% of its duration — the exact
+     curve Reveal.tsx rejects in its own comment as reading "like a dropped
+     frame", yet it drove all 41 CSS transitions on the site, including every
+     hover transform. At the 180ms of a hover that front-loading reads as a
+     snap, not as movement.
+
+     It is now easeOutCubic: still decelerating, still arriving softly, but it
+     spends its distance across the whole duration so a 180ms hover reads as
+     one continuous gesture. Entrances keep an expressive curve — a card
+     arriving from off-screen can afford drama that a hover cannot. */
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1); /* easeOutCubic — state */
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1); /* easeOutQuint — entrances */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* symmetric — reversible */
 }
 
 /* === SEMANTIC =========================================================== */
@@ -167,9 +179,15 @@
   --error: var(--state-error);
   --info: var(--state-info);
 
-  --motion-state: var(--dur-fast);
-  --motion-reveal: var(--dur-slow);
-  --motion-scene: var(--dur-cinema);
+  --motion-state: var(--dur-fast); /* hover, press, focus */
+  --motion-reveal: var(--dur-slow); /* content arriving */
+  --motion-scene: var(--dur-cinema); /* full-section moves */
+
+  /* One gesture, one clock. A card that lifts on hover was running
+     border-color on 180ms while its transform and shadow ran on 280ms — one
+     pointer event driving two different timelines, which is what made the
+     lift feel detached from the colour change. */
+  --motion-lift: var(--dur-base);
 
   /* Type scale. Tracking is tighter and display leading looser than the dark
      theme used: on a bright field the ground bleeds into counters and

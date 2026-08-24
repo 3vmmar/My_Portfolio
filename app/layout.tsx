@@ -7,7 +7,7 @@ import "./globals.css";
 import "./components.css";
 import "./case.css";
 import SmoothScroll from "@/components/providers/SmoothScroll";
-import CommandPalette from "@/components/CommandPalette";
+import CommandPaletteLoader from "@/components/CommandPaletteLoader";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { identity, summary } from "@/lib/content";
@@ -160,6 +160,21 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+      <head>
+        {/* The travertine tile is the LCP element, but it is referenced from
+            CSS, so it is not discovered until the stylesheet has parsed —
+            measured at 659ms against 170ms for everything in the markup.
+            Preloading it moves the fetch to the front of the queue. The type
+            hint means engines without AVIF skip this and pick their own
+            variant from the image-set() in globals.css instead. */}
+        <link
+          rel="preload"
+          as="image"
+          href="/img/travertine.avif"
+          type="image/avif"
+          fetchPriority="high"
+        />
+      </head>
       <body>
         <script
           type="application/ld+json"
@@ -175,7 +190,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </SmoothScroll>
-        <CommandPalette />
+        <CommandPaletteLoader />
         <div className="grain" aria-hidden="true" />
       </body>
     </html>

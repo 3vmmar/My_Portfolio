@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { identity } from "@/lib/content";
-import { lockPageScroll } from "@/components/providers/SmoothScroll";
+import { lockPageScroll } from "@/components/providers/scrollLock";
 
 const links = [
   { href: "/#work", label: "Work" },
@@ -19,8 +19,18 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 24);
-    onScroll();
+    // Only cross the React boundary when the threshold is actually crossed.
+    // This fired setLifted on every scroll event; React bails on an identical
+    // value, but the call still ran ~60x/s for the life of the page.
+    let last = window.scrollY > 24;
+    setLifted(last);
+    const onScroll = () => {
+      const next = window.scrollY > 24;
+      if (next !== last) {
+        last = next;
+        setLifted(next);
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);

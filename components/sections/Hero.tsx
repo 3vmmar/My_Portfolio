@@ -95,10 +95,23 @@ export default function Hero() {
           .to(".hero-portrait-wrap", { yPercent: 18, ease: "none" }, 0)
           .to(".hero-scrollcue", { opacity: 0, ease: "none", duration: 0.12 }, 0);
 
-        /* --- scroll cue --------------------------------------------------
-           A short breathing loop, but killed the moment the hero leaves the
-           viewport: an infinite tween on an element 6,000px off-screen at
-           opacity 0 is pure main-thread cost. */
+      }, el);
+
+      return () => ctx.revert();
+    });
+
+    /* --- scroll cue ----------------------------------------------------
+       Its own query, not the shared no-preference branch. `.hero-scrollcue`
+       is `display: none` below 900px (components.css), but the tween was
+       registered regardless — so on a phone an infinite tween wrote scaleY to
+       a hidden node for the entire time the hero was on screen. Registering
+       it against the breakpoint means matchMedia builds it only where the cue
+       exists, and tears it down live if the viewport crosses back.
+
+       Still paused off-screen: an infinite tween on an element 6,000px above
+       the viewport at opacity 0 is pure main-thread cost. */
+    mm.add("(prefers-reduced-motion: no-preference) and (min-width: 901px)", () => {
+      const ctx = gsap.context(() => {
         const cue = gsap.fromTo(
           ".hero-scrollcue-line",
           { scaleY: 0.35 },
@@ -117,7 +130,6 @@ export default function Hero() {
           onToggle: (self) => (self.isActive ? cue.play() : cue.pause()),
         });
       }, el);
-
       return () => ctx.revert();
     });
 

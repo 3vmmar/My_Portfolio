@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { identity } from "@/lib/content";
 import { projects } from "@/lib/projects";
-import { lockPageScroll } from "@/components/providers/SmoothScroll";
+import { lockPageScroll } from "@/components/providers/scrollLock";
 
 type Item = {
   id: string;
@@ -18,15 +18,27 @@ type Item = {
 /** Elements outside the dialog that must be inert while it is open. */
 const BACKGROUND = ["header.nav", "#main", "footer", ".sheet"];
 
-export default function CommandPalette() {
+export default function CommandPalette({ autoOpen = false }: { autoOpen?: boolean }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  // autoOpen is set by CommandPaletteLoader, which owns the key bindings until
+  // this chunk exists and mounts it already-open on the first real trigger.
+  const [open, setOpen] = useState(autoOpen);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
+
+  // When the loader mounts this already-open, nothing has captured the element
+  // that had focus when the shortcut fired. The palette input takes focus in a
+  // later effect, so document.activeElement is still the trigger right now.
+  useEffect(() => {
+    if (autoOpen && !restoreFocus.current) {
+      restoreFocus.current = document.activeElement as HTMLElement;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const close = useCallback(() => {
     setOpen(false);

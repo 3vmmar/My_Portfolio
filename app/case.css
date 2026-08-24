@@ -58,10 +58,24 @@
   flex-wrap: wrap;
 }
 .case-crumbs a {
+  position: relative;
   transition: color var(--motion-state) var(--ease-out);
+}
+/* The crumb sits at the label line-height, so its box is 16px tall — under the
+   24px in WCAG 2.2 SC 2.5.8. The hit area is grown with a pseudo-element
+   rather than padding, which would push the crumb row off the hero baseline.
+   ::before for the same reason as the footer rule in components.css: ::after
+   is spoken for by the print sheet's external-URL rule. */
+.case-crumbs a::before {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
 }
 .case-crumbs a:hover {
   color: var(--accent);
+}
+.case-crumbs a:active {
+  color: var(--accent-press);
 }
 .case-crumb-sep {
   color: var(--text-muted);
@@ -429,15 +443,20 @@
   border: 1px solid var(--border);
   border-radius: var(--card-radius);
   box-shadow: var(--shadow-sm);
+  /* One gesture, one clock — border, shadow and lift all on --motion-lift. */
   transition:
-    border-color var(--motion-state) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
+    border-color var(--motion-lift) var(--ease-out),
+    box-shadow var(--motion-lift) var(--ease-out),
+    transform var(--motion-lift) var(--ease-out);
 }
 .case-next-link:hover {
   border-color: var(--brass-600);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+}
+.case-next-link:active {
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 .case-next-link.is-next {
   text-align: right;
@@ -474,7 +493,10 @@
 .nf-code {
   font-size: clamp(4.5rem, 18vw, 12rem);
   line-height: 0.85;
-  color: var(--travertine-400);
+  /* 400 on the canvas is 1.99:1 — under the 3:1 large-text minimum. 600 is
+     the next step in the ramp that clears it (4.30:1) and keeps the numeral
+     reading as recessed stone rather than a headline. */
+  color: var(--travertine-600);
   margin-bottom: var(--rhythm-1);
 }
 .nf-actions {

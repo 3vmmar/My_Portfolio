@@ -141,7 +141,7 @@ export function WordReveal({
   delay = 0,
   stagger = 0.038,
   duration = 0.64,
-  start = "top 85%",
+  start = "top 86%",
   accentWords,
 }: {
   text: string;
@@ -186,7 +186,7 @@ export function WordReveal({
           delay,
           ease: "expo.out",
           stagger,
-          scrollTrigger: { trigger: el, start, once: true },
+          scrollTrigger: { trigger: el, start, end: "bottom top", once: true },
         },
       );
     });
@@ -292,7 +292,7 @@ export function BrassRule({
           ease: "power2.out",
           scrollTrigger: {
             trigger: el,
-            start: "top 92%",
+            start: "top 86%",
             end: "bottom top",
             once: true,
           },

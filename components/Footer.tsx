@@ -87,9 +87,6 @@ export default function Footer() {
           <p className="label">
             © {new Date().getFullYear()} {identity.name}
           </p>
-          <p className="label footer-credit">
-            Palette measured from a photograph — travertine, brass, midnight
-          </p>
         </div>
       </div>
     </footer>
