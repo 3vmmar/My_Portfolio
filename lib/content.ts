@@ -59,7 +59,7 @@ export const experience: Role[] = [
   {
     company: "Anthropic",
     title: "AI Engineer",
-    period: "Mar 2026 — Present",
+    period: "Mar 2025 — Present",
     mode: "Remote",
     current: true,
     points: [
@@ -71,7 +71,7 @@ export const experience: Role[] = [
   {
     company: "Selvoria AI",
     title: "CEO & Founder",
-    period: "2025 — Present",
+    period: "2026 — Present",
     mode: "Egypt",
     current: true,
     points: [
